@@ -1,0 +1,245 @@
+#include <bits/stdc++.h>
+using namespace std;
+
+struct Person {
+    int id;
+    string nama;
+    int umur;
+};
+
+// CSV: id,nama,umur
+const string DATA_FILE = "data.txt"; 
+
+// --- Util ---
+string trim(const string &s) {
+    size_t a = s.find_first_not_of(" \t\r\n");
+    if (a == string::npos) return "";
+    size_t b = s.find_last_not_of(" \t\r\n");
+    return s.substr(a, b - a + 1);
+}
+vector<string> splitCSV(const string &line) {
+    // Sederhana: asumsi tidak ada koma di dalam nama.
+    vector<string> out;
+    string cur;
+    bool inQuote = false;
+
+for (char c : line) {
+        if (c == '"') { inQuote = !inQuote; }
+        else if (c == ',' && !inQuote) 
+              { out.push_back(cur); cur.clear(); }
+        else cur.push_back(c);
+    }
+    out.push_back(cur);
+    for (auto &x : out) x = trim(x);
+    return out;
+}
+
+string toCSV(const Person &p) {
+    // Quote nama jika perlu
+    bool needQuote = p.nama.find(',') != 
+string::npos || p.nama.find('"') != string::npos;
+    string name = p.nama;
+    // Escape tanda kutip ganda
+    string escaped;
+    for (char c : name) {
+        if (c == '"') escaped += "\"\"";
+        else escaped += c;
+    }
+    if (needQuote) escaped = "\"" + escaped + "\"";
+    return to_string(p.id) + "," + escaped + ",
+     " + to_string(p.umur);
+}
+// --- IO File ---
+vector<Person> loadAll() {
+    vector<Person> v;
+    ifstream fin(DATA_FILE);
+    if (!fin) return v; // file belum ada
+    string line;
+    while (getline(fin, line)) {
+        line = trim(line);
+        if (line.empty()) continue;
+        auto cols = splitCSV(line);
+        if (cols.size() < 3) continue;
+        try {
+            Person p;
+            p.id = stoi(cols[0]);
+            p.nama = cols[1];
+            p.umur = stoi(cols[2]);
+            v.push_back(p);
+        } catch (...) {
+            // Lewati baris korup
+        }
+    }
+    return v;
+}
+bool saveAll(const vector<Person>& v) {
+    ofstream fout(DATA_FILE, ios::trunc);
+    if (!fout) return false;
+    for (const auto &p : v) {
+        fout << toCSV(p) << "\n";
+    }
+    return true;
+}
+
+int nextId(const vector<Person>& v) {
+    int mx = 0;
+    for (auto &p : v) mx = max(mx, p.id);
+    return mx + 1;
+}
+/ --- CRUD ---
+void createRecord() {
+    auto data = loadAll();
+    Person p;
+    p.id = nextId(data);
+
+    cout << "Masukkan nama: ";
+    string nama;
+    getline(cin >> ws, nama);
+    cout << "Masukkan umur: ";
+    while (!(cin >> p.umur) || p.umur < 0) {
+        cin.clear(); cin.ignore(numeric_limits<streamsize>::max(), '\n');
+        cout << "Umur tidak valid. Masukkan lagi: ";
+    }
+    cin.ignore(numeric_limits<streamsize>::max(), '\n');
+
+    p.nama = trim(nama);
+    data.push_back(p);
+    if (saveAll(data)) cout << "Data tersimpan dengan ID " << p.id << ".\n";
+    else cout << "Gagal menyimpan data!\n";
+}
+
+void readAll() {
+    auto data = loadAll();
+    if (data.empty()) {
+        cout << "(Belum ada data)\n";
+        return;
+    }
+    cout << left << setw(6) << "ID" << setw(30) << "Nama" << setw(6) << "Umur" << "\n";
+    cout << string(44, '-') << "\n";
+    for (auto &p : data) {
+        cout << left << setw(6) << p.id
+             << setw(30) << p.nama.substr(0, 28)
+             << setw(6) << p.umur << "\n";
+    }
+}
+int findIndexById(const vector<Person>& v, int id) {
+    for (int i = 0; i < (int)v.size(); ++i)
+        if (v[i].id == id) return i;
+    return -1;
+}
+void updateRecord() {
+    auto data = loadAll();
+    if (data.empty()) { 
+   cout << "Tidak ada data untuk diupdate.\n"; return; }
+    int id; cout << "Masukkan ID yang akan diupdate: ";
+    if (!(cin >> id)) { cin.clear(); cin.ignore(numeric_limits<streamsize>::max(), '\n'); 
+    cout << "ID tidak valid.\n"; return; }
+    cin.ignore(numeric_limits<streamsize>::max(), '\n');
+int idx = findIndexById(data, id);
+    if (idx == -1) { cout << "ID tidak ditemukan.\n"; return; }
+
+    cout << "Nama lama: " << data[idx].nama << "\n";
+    cout << "Nama baru (kosongkan jika tidak berubah): ";
+    string namaBaru; getline(cin, namaBaru);
+    if (!trim(namaBaru).empty()) data[idx].nama = trim(namaBaru);
+
+    cout << "Umur lama: " << data[idx].umur << "\n";
+    cout << "Umur baru (kosongkan untuk tidak ubah): ";
+    string umurStr; getline(cin, umurStr);
+    if (!trim(umurStr).empty()) {
+        try {
+            int u = stoi(umurStr);
+            if (u >= 0) data[idx].umur = u;
+            else cout << "Umur baru tidak valid, diabaikan.\n";
+        } catch (...) { cout << "Input umur tidak valid, diabaikan.\n"; }
+    } 
+if (saveAll(data)) cout << "Data ID " << id << " berhasil diupdate.\n";
+    else cout << "Gagal menyimpan perubahan!\n";
+}
+
+void deleteRecord() {
+    auto data = loadAll();
+    if (data.empty()) {
+    cout << "Tidak ada data untuk dihapus.\n"; return; }
+    int id; cout << "Masukkan ID yang akan dihapus: ";
+    if (!(cin >> id)) { cin.clear(); cin.ignore(numeric_limits<streamsize>::max(),
+     '\n'); cout << "ID tidak valid.\n"; return; }
+    cin.ignore(numeric_limits<streamsize>::max(), '\n');
+
+    int idx = findIndexById(data, id);
+    if (idx == -1) {
+         cout << "ID tidak ditemukan.\n"; return; }
+cout << "Yakin hapus ID " << id << " (y/n)? ";
+    char c; cin >> c; cin.ignore
+        (numeric_limits<streamsize>::max(), '\n');
+    if (c == 'y' || c == 'Y') {
+        data.erase(data.begin() + idx);
+        if (saveAll(data)) 
+             cout << "Data ID " << id << " terhapus.\n";
+        else cout << "Gagal menghapus data!\n";
+    } else {
+        cout << "Dibatalkan.\n";
+    }
+}
+void searchByName() {
+    auto data = loadAll();
+    cout << "Kata kunci nama: ";
+    string key; getline(cin >> ws, key);
+    key = trim(key);
+    if (key.empty()) { cout << "Kata kunci kosong.\n"; return; }
+
+    vector<Person> res;
+    for (auto &p : data) {
+        string a = p.nama, b = key;
+        // lowercase sederhana
+        transform(a.begin(), a.end(), a.begin(), ::tolower);
+        transform(b.begin(), b.end(), b.begin(), ::tolower);
+        if (a.find(b) != string::npos) res.push_back(p);
+    }
+    if (res.empty()) { cout << "Tidak ada yang cocok.\n"; return; }
+    cout << left << setw(6) << "ID" << setw(30) 
+        << "Nama" << setw(6) << "Umur" << "\n";
+    cout << string(44, '-') << "\n";
+    for (auto &p : res) {
+        cout << left << setw(6) << p.id
+             << setw(30) << p.nama.substr(0, 28)
+             << setw(6) << p.umur << "\n";
+    }
+}
+void menu() {
+    cout << "\n=== CRUD Sederhana (data.txt) ===\n";
+    cout << "1. Tambah data\n";
+    cout << "2. Tampilkan semua data\n";
+    cout << "3. Update data\n";
+    cout << "4. Hapus data\n";
+    cout << "5. Cari berdasarkan nama\n";
+    cout << "0. Keluar\n";
+    cout << "Pilih: ";
+}
+
+int main() {
+    ios::sync_with_stdio(false);
+    cin.tie(nullptr);
+
+    while (true) {
+        menu();
+        int p;
+        if (!(cin >> p)) {
+            cin.clear();
+            cin.ignore(numeric_limits<streamsize>::max(), '\n');
+            cout << "Input tidak valid.\n";
+            continue;
+        }
+ cin.ignore(numeric_limits<streamsize>::max(), '\n'); // buang newline
+
+        switch (p) {
+            case 1: createRecord(); break;
+            case 2: readAll(); break;
+            case 3: updateRecord(); break;
+            case 4: deleteRecord(); break;
+            case 5: searchByName(); break;
+            case 0: cout << "Selesai.\n"; return 0;
+            default: cout << "Pilihan tidak dikenal.\n";
+        }
+    }
+}
