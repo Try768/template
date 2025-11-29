@@ -6,17 +6,20 @@
 
 using namespace std;
 
-const int MAX_BARANG = 100;
+const int MAX_Pakaian = 100;
 
-struct Barang{
+struct Pakaian{
     int id;
-    string nama;
+    string merek;
+    string kategori;
+    string tipe;//style,model,dll
+    unsigned int ukuran;//dalam cm
     int stok;
     double harga;
 };
 
-Barang daftarBarang[MAX_BARANG];
-int jumlahBarang = 0;
+Pakaian daftarPakaian[MAX_Pakaian];
+int jumlahPakaian = 0;
 
 // ================== FUNGSI UTILITAS ==================
 void muatDariFile(const string &namaFile) {
@@ -27,32 +30,38 @@ void muatDariFile(const string &namaFile) {
         return;
     }
 
-    jumlahBarang = 0;
+    jumlahPakaian = 0;
     string line;
-    while (getline(file, line) && jumlahBarang < MAX_BARANG) {
+    while (getline(file, line) && jumlahPakaian < MAX_Pakaian) {
         if (line.empty()) continue;
 
         stringstream ss(line);
-        string idStr, nama, stokStr, hargaStr;
+        string idStr, merekstr, kategoristr, tipestr, ukuranStr, stokStr, hargaStr;
 
         // Format: id|nama|stok|harga
         if (!getline(ss, idStr, '|')) continue;
-        if (!getline(ss, nama, '|')) continue;
+        if (!getline(ss, merekstr, '|')) continue;
+        if (!getline(ss, kategoristr, '|')) continue;
+        if (!getline(ss, tipestr, '|')) continue;
+        if (!getline(ss, ukuranStr, '|')) continue;
         if (!getline(ss, stokStr, '|')) continue;
         if (!getline(ss, hargaStr, '|')) continue;
 
-        Barang b;
+        Pakaian b;
         b.id   = stoi(idStr);
-        b.nama = nama;
+        b.merek = merekstr;
+        b.kategori = kategoristr;
+        b.tipe = tipestr;
+        b.ukuran = stoi(ukuranStr);
         b.stok = stoi(stokStr);
         b.harga = stod(hargaStr);
 
-        daftarBarang[jumlahBarang++] = b;
+        daftarPakaian[jumlahPakaian++] = b;
     }
 
     file.close();
-    cout << "Data berhasil dimuat dari " << namaFile << ". Jumlah barang: " 
-         << jumlahBarang << "\n";
+    cout << "Data berhasil dimuat dari " << namaFile << ". Jumlah Pakaian: " 
+         << jumlahPakaian << "\n";
 }
 
 void simpanKeFile(const string &namaFile) {
@@ -62,11 +71,14 @@ void simpanKeFile(const string &namaFile) {
         return;
     }
 
-    for (int i = 0; i < jumlahBarang; ++i) {
-        file << daftarBarang[i].id   << "|"
-             << daftarBarang[i].nama << "|"
-             << daftarBarang[i].stok << "|"
-             << daftarBarang[i].harga << "\n";
+    for (int i = 0; i < jumlahPakaian; ++i) {
+        file << daftarPakaian[i].id   << "|"
+             << daftarPakaian[i].merek << "|"
+             << daftarPakaian[i].kategori << "|"
+             << daftarPakaian[i].tipe << "|"
+             << daftarPakaian[i].ukuran << "|"
+             << daftarPakaian[i].stok << "|"
+             << daftarPakaian[i].harga << "\n";
     }
 
     file.close();
@@ -74,16 +86,16 @@ void simpanKeFile(const string &namaFile) {
 }
 
 int cariIndexById(int id) {
-    for (int i = 0; i < jumlahBarang; ++i) {
-        if (daftarBarang[i].id == id) return i;
+    for (int i = 0; i < jumlahPakaian; ++i) {
+        if (daftarPakaian[i].id == id) return i;
     }
     return -1;
 }
 
 // ================== CRUD ==================
-void tampilkanBarang() {
-    if (jumlahBarang == 0) {
-        cout << "Belum ada data barang.\n";
+void tampilkanPakaian() {
+    if (jumlahPakaian == 0) {
+        cout << "Belum ada data Pakaian.\n";
         return;
     }
 
@@ -93,22 +105,25 @@ void tampilkanBarang() {
          << left << setw(10) << "Harga" << "\n";
     cout << string(50, '-') << "\n";
 
-    for (int i = 0; i < jumlahBarang; ++i) {
-        cout << left << setw(5)  << daftarBarang[i].id
-             << left << setw(20) << daftarBarang[i].nama
-             << left << setw(10) << daftarBarang[i].stok
-             << left << setw(10) << daftarBarang[i].harga
+    for (int i = 0; i < jumlahPakaian; ++i) {
+        cout << left << setw(5)  << daftarPakaian[i].id
+             << left << setw(20) << daftarPakaian[i].merek
+             << left << setw(15) << daftarPakaian[i].kategori
+             << left << setw(15) << daftarPakaian[i].tipe
+             << left << setw(10) << daftarPakaian[i].ukuran
+             << left << setw(10) << daftarPakaian[i].stok
+             << left << setw(10) << daftarPakaian[i].harga
              << "\n";
     }
 }
 
-void tambahBarang() {
-    if (jumlahBarang >= MAX_BARANG) {
-        cout << "Array penuh, tidak bisa menambah barang lagi.\n";
+void tambahPakaian() {
+    if (jumlahPakaian >= MAX_Pakaian) {
+        cout << "Array penuh, tidak bisa menambah Pakaian lagi.\n";
         return;
     }
 
-    Barang b;
+    Pakaian b;
     cout << "Masukkan ID         : ";
     cin >> b.id;
     cin.ignore(); // bersihkan newline
@@ -118,7 +133,7 @@ void tambahBarang() {
         return;
     }
 
-    cout << "Masukkan Nama Barang: ";
+    cout << "Masukkan Nama Pakaian: ";
     getline(cin, b.nama);
 
     cout << "Masukkan Stok       : ";
@@ -127,33 +142,33 @@ void tambahBarang() {
     cout << "Masukkan Harga      : ";
     cin >> b.harga;
 
-    daftarBarang[jumlahBarang++] = b;
-    cout << "Barang berhasil ditambahkan.\n";
+    daftarPakaian[jumlahPakaian++] = b;
+    cout << "Pakaian berhasil ditambahkan.\n";
 }
 
-void ubahBarang() {
-    if (jumlahBarang == 0) {
-        cout << "Belum ada data barang.\n";
+void ubahPakaian() {
+    if (jumlahPakaian == 0) {
+        cout << "Belum ada data Pakaian.\n";
         return;
     }
 
     int id;
-    cout << "Masukkan ID barang yang akan diubah: ";
+    cout << "Masukkan ID Pakaian yang akan diubah: ";
     cin >> id;
     cin.ignore();
 
     int index = cariIndexById(id);
     if (index == -1) {
-        cout << "Barang dengan ID " << id << " tidak ditemukan.\n";
+        cout << "Pakaian dengan ID " << id << " tidak ditemukan.\n";
         return;
     }
 
     cout << "Data lama:\n";
-    cout << "Nama  : " << daftarBarang[index].nama << "\n";
-    cout << "Stok  : " << daftarBarang[index].stok << "\n";
-    cout << "Harga : " << daftarBarang[index].harga << "\n\n";
+    cout << "Nama  : " << daftarPakaian[index].nama << "\n";
+    cout << "Stok  : " << daftarPakaian[index].stok << "\n";
+    cout << "Harga : " << daftarPakaian[index].harga << "\n\n";
 
-    Barang &b = daftarBarang[index];
+    Pakaian &b = daftarPakaian[index];
     string input;
     
     cout << "Nama baru (kosongkan jika tidak diubah): ";
@@ -170,48 +185,48 @@ void ubahBarang() {
     cin >> hargaBaru;
     if (hargaBaru != -1) b.harga = hargaBaru;
 
-    cout << "Data barang berhasil diubah.\n";
+    cout << "Data Pakaian berhasil diubah.\n";
 }
 
-void hapusBarang() {
-    if (jumlahBarang == 0) {
-        cout << "Belum ada data barang.\n";
+void hapusPakaian() {
+    if (jumlahPakaian == 0) {
+        cout << "Belum ada data Pakaian.\n";
         return;
     }
 
     int id;
-    cout << "Masukkan ID barang yang akan dihapus: ";
+    cout << "Masukkan ID Pakaian yang akan dihapus: ";
     cin >> id;
 
     int index = cariIndexById(id);
     if (index == -1) {
-        cout << "Barang dengan ID " << id << " tidak ditemukan.\n";
+        cout << "Pakaian dengan ID " << id << " tidak ditemukan.\n";
         return;
     }
 
     // Geser elemen setelahnya ke depan
-    for (int i = index; i < jumlahBarang - 1; ++i) {
-        daftarBarang[i] = daftarBarang[i + 1];
+    for (int i = index; i < jumlahPakaian - 1; ++i) {
+        daftarPakaian[i] = daftarPakaian[i + 1];
     }
-    jumlahBarang--;
+    jumlahPakaian--;
 
-    cout << "Barang berhasil dihapus.\n";
+    cout << "Pakaian berhasil dihapus.\n";
 }
 
 // ================== MENU ==================
 void tampilkanMenu() {
-    cout << "\n=== MENU CRUD BARANG ===\n";
-    cout << "1. Tampilkan Semua Barang\n";
-    cout << "2. Tambah Barang\n";
-    cout << "3. Ubah Barang\n";
-    cout << "4. Hapus Barang\n";
+    cout << "\n=== MENU CRUD Pakaian ===\n";
+    cout << "1. Tampilkan Semua Pakaian\n";
+    cout << "2. Tambah Pakaian\n";
+    cout << "3. Ubah Pakaian\n";
+    cout << "4. Hapus Pakaian\n";
     cout << "5. Simpan ke File\n";
     cout << "0. Keluar\n";
     cout << "Pilihan: ";
 }
 
 int main() {
-    string namaFile = "barang.txt";
+    string namaFile = "Pakaian.txt";
     muatDariFile(namaFile);
 
     int pilihan;
@@ -222,16 +237,16 @@ int main() {
 
         switch (pilihan) {
             case 1:
-                tampilkanBarang();
+                tampilkanPakaian();
                 break;
             case 2:
-                tambahBarang();
+                tambahPakaian();
                 break;
             case 3:
-                ubahBarang();
+                ubahPakaian();
                 break;
             case 4:
-                hapusBarang();
+                hapusPakaian();
                 break;
             case 5:
                 simpanKeFile(namaFile);
