@@ -6,20 +6,19 @@
 
 using namespace std;
 
-const int MAX_Pakaian = 100;
+const int MAX_material = 100;
 
-struct Pakaian{
+struct material{
     int id;
-    string merek;
-    string kategori;
-    string tipe;//style,model,dll
-    unsigned int ukuran;//dalam cm
+    string jenis_material;
+    string keterangan;
+    unsigned int berat;//dalam kg
     int stok;
     double harga;
 };
 
-Pakaian daftarPakaian[MAX_Pakaian];
-int jumlahPakaian = 0;
+material daftarmaterial[MAX_material];
+int jumlahmaterial = 0;
 
 // ================== FUNGSI UTILITAS ==================
 void muatDariFile(const string &namaFile) {
@@ -30,38 +29,36 @@ void muatDariFile(const string &namaFile) {
         return;
     }
 
-    jumlahPakaian = 0;
+    jumlahmaterial = 0;
     string line;
-    while (getline(file, line) && jumlahPakaian < MAX_Pakaian) {
+    while (getline(file, line) && jumlahmaterial < MAX_material) {
         if (line.empty()) continue;
 
         stringstream ss(line);
-        string idStr, merekstr, kategoristr, tipestr, ukuranStr, stokStr, hargaStr;
+        string idStr,jenisstr, ketstr, beratStr, stokStr, hargaStr;
 
         // Format: id|nama|stok|harga
         if (!getline(ss, idStr, '|')) continue;
-        if (!getline(ss, merekstr, '|')) continue;
-        if (!getline(ss, kategoristr, '|')) continue;
-        if (!getline(ss, tipestr, '|')) continue;
-        if (!getline(ss, ukuranStr, '|')) continue;
+        if (!getline(ss, jenisstr, '|')) continue;
+        if (!getline(ss, ketstr, '|')) continue;
+        if (!getline(ss, beratStr, '|')) continue;
         if (!getline(ss, stokStr, '|')) continue;
         if (!getline(ss, hargaStr, '|')) continue;
 
-        Pakaian b;
+        material b;
         b.id   = stoi(idStr);
-        b.merek = merekstr;
-        b.kategori = kategoristr;
-        b.tipe = tipestr;
-        b.ukuran = stoi(ukuranStr);
+        b.jenis_material = jenisstr;
+        b.keterangan = ketstr;
+        b.berat = stoi(beratStr);
         b.stok = stoi(stokStr);
         b.harga = stod(hargaStr);
 
-        daftarPakaian[jumlahPakaian++] = b;
+        daftarmaterial[jumlahmaterial++] = b;
     }
 
     file.close();
-    cout << "Data berhasil dimuat dari " << namaFile << ". Jumlah Pakaian: " 
-         << jumlahPakaian << "\n";
+    cout << "Data berhasil dimuat dari " << namaFile << ". Jumlah jenis material: " 
+         << jumlahmaterial << "\n";
 }
 
 void simpanKeFile(const string &namaFile) {
@@ -71,14 +68,13 @@ void simpanKeFile(const string &namaFile) {
         return;
     }
 
-    for (int i = 0; i < jumlahPakaian; ++i) {
-        file << daftarPakaian[i].id   << "|"
-             << daftarPakaian[i].merek << "|"
-             << daftarPakaian[i].kategori << "|"
-             << daftarPakaian[i].tipe << "|"
-             << daftarPakaian[i].ukuran << "|"
-             << daftarPakaian[i].stok << "|"
-             << daftarPakaian[i].harga << "\n";
+    for (int i = 0; i < jumlahmaterial; ++i) {
+        file << daftarmaterial[i].id   << "|"
+             << daftarmaterial[i].jenis_material << "|"
+             << daftarmaterial[i].keterangan<< "|"
+             << daftarmaterial[i].berat << "|"
+             << daftarmaterial[i].stok << "|"
+             << daftarmaterial[i].harga << "\n";
     }
 
     file.close();
@@ -86,44 +82,46 @@ void simpanKeFile(const string &namaFile) {
 }
 
 int cariIndexById(int id) {
-    for (int i = 0; i < jumlahPakaian; ++i) {
-        if (daftarPakaian[i].id == id) return i;
+    for (int i = 0; i < jumlahmaterial; ++i) {
+        if (daftarmaterial[i].id == id) return i;
     }
     return -1;
 }
 
 // ================== CRUD ==================
-void tampilkanPakaian() {
-    if (jumlahPakaian == 0) {
-        cout << "Belum ada data Pakaian.\n";
+void tampilkanmaterial() {
+    if (jumlahmaterial == 0) {
+        cout << "Belum ada data material.\n";
         return;
     }
 
     cout << left << setw(5)  << "ID"
-         << left << setw(20) << "Nama"
+         << left << setw(20) << "jenis material"
+         <<left<< setw(15)<<"keterangan"
+         <<left<<setw(10)<<"berat(kg)"
          << left << setw(10) << "Stok"
          << left << setw(10) << "Harga" << "\n";
+
     cout << string(50, '-') << "\n";
 
-    for (int i = 0; i < jumlahPakaian; ++i) {
-        cout << left << setw(5)  << daftarPakaian[i].id
-             << left << setw(20) << daftarPakaian[i].merek
-             << left << setw(15) << daftarPakaian[i].kategori
-             << left << setw(15) << daftarPakaian[i].tipe
-             << left << setw(10) << daftarPakaian[i].ukuran
-             << left << setw(10) << daftarPakaian[i].stok
-             << left << setw(10) << daftarPakaian[i].harga
+    for (int i = 0; i < jumlahmaterial; ++i) {
+        cout << left << setw(5)  << daftarmaterial[i].id
+             << left << setw(20) << daftarmaterial[i].jenis_material
+             << left << setw(15) << daftarmaterial[i].keterangan
+             << left << setw(10) << daftarmaterial[i].berat
+             << left << setw(10) << daftarmaterial[i].stok
+             << left << setw(10) << daftarmaterial[i].harga
              << "\n";
     }
 }
-
-void tambahPakaian() {
-    if (jumlahPakaian >= MAX_Pakaian) {
-        cout << "Array penuh, tidak bisa menambah Pakaian lagi.\n";
+//todo
+void tambahmaterial() {
+    if (jumlahmaterial >= MAX_material) {
+        cout << "Array penuh, tidak bisa menambah material lagi.\n";
         return;
     }
 
-    Pakaian b;
+    material b;
     cout << "Masukkan ID         : ";
     cin >> b.id;
     cin.ignore(); // bersihkan newline
@@ -133,7 +131,7 @@ void tambahPakaian() {
         return;
     }
 
-    cout << "Masukkan Nama Pakaian: ";
+    cout << "Masukkan Nama material: ";
     getline(cin, b.nama);
 
     cout << "Masukkan Stok       : ";
@@ -142,33 +140,33 @@ void tambahPakaian() {
     cout << "Masukkan Harga      : ";
     cin >> b.harga;
 
-    daftarPakaian[jumlahPakaian++] = b;
-    cout << "Pakaian berhasil ditambahkan.\n";
+    daftarmaterial[jumlahmaterial++] = b;
+    cout << "material berhasil ditambahkan.\n";
 }
-
-void ubahPakaian() {
-    if (jumlahPakaian == 0) {
-        cout << "Belum ada data Pakaian.\n";
+//todo
+void ubahmaterial() {
+    if (jumlahmaterial == 0) {
+        cout << "Belum ada data material.\n";
         return;
     }
 
     int id;
-    cout << "Masukkan ID Pakaian yang akan diubah: ";
+    cout << "Masukkan ID material yang akan diubah: ";
     cin >> id;
     cin.ignore();
 
     int index = cariIndexById(id);
     if (index == -1) {
-        cout << "Pakaian dengan ID " << id << " tidak ditemukan.\n";
+        cout << "material dengan ID " << id << " tidak ditemukan.\n";
         return;
     }
 
     cout << "Data lama:\n";
-    cout << "Nama  : " << daftarPakaian[index].nama << "\n";
-    cout << "Stok  : " << daftarPakaian[index].stok << "\n";
-    cout << "Harga : " << daftarPakaian[index].harga << "\n\n";
+    cout << "Nama  : " << daftarmaterial[index].nama << "\n";
+    cout << "Stok  : " << daftarmaterial[index].stok << "\n";
+    cout << "Harga : " << daftarmaterial[index].harga << "\n\n";
 
-    Pakaian &b = daftarPakaian[index];
+    material &b = daftarmaterial[index];
     string input;
     
     cout << "Nama baru (kosongkan jika tidak diubah): ";
@@ -185,48 +183,48 @@ void ubahPakaian() {
     cin >> hargaBaru;
     if (hargaBaru != -1) b.harga = hargaBaru;
 
-    cout << "Data Pakaian berhasil diubah.\n";
+    cout << "Data material berhasil diubah.\n";
 }
-
-void hapusPakaian() {
-    if (jumlahPakaian == 0) {
-        cout << "Belum ada data Pakaian.\n";
+//todo
+void hapusmaterial() {
+    if (jumlahmaterial == 0) {
+        cout << "Belum ada data material.\n";
         return;
     }
 
     int id;
-    cout << "Masukkan ID Pakaian yang akan dihapus: ";
+    cout << "Masukkan ID material yang akan dihapus: ";
     cin >> id;
 
     int index = cariIndexById(id);
     if (index == -1) {
-        cout << "Pakaian dengan ID " << id << " tidak ditemukan.\n";
+        cout << "material dengan ID " << id << " tidak ditemukan.\n";
         return;
     }
 
     // Geser elemen setelahnya ke depan
-    for (int i = index; i < jumlahPakaian - 1; ++i) {
-        daftarPakaian[i] = daftarPakaian[i + 1];
+    for (int i = index; i < jumlahmaterial - 1; ++i) {
+        daftarmaterial[i] = daftarmaterial[i + 1];
     }
-    jumlahPakaian--;
+    jumlahmaterial--;
 
-    cout << "Pakaian berhasil dihapus.\n";
+    cout << "material berhasil dihapus.\n";
 }
 
 // ================== MENU ==================
 void tampilkanMenu() {
-    cout << "\n=== MENU CRUD Pakaian ===\n";
-    cout << "1. Tampilkan Semua Pakaian\n";
-    cout << "2. Tambah Pakaian\n";
-    cout << "3. Ubah Pakaian\n";
-    cout << "4. Hapus Pakaian\n";
+    cout << "\n=== MENU CRUD material ===\n";
+    cout << "1. Tampilkan Semua material\n";
+    cout << "2. Tambah material\n";
+    cout << "3. Ubah material\n";
+    cout << "4. Hapus material\n";
     cout << "5. Simpan ke File\n";
     cout << "0. Keluar\n";
     cout << "Pilihan: ";
 }
 
 int main() {
-    string namaFile = "Pakaian.txt";
+    string namaFile = "material.txt";
     muatDariFile(namaFile);
 
     int pilihan;
@@ -237,16 +235,16 @@ int main() {
 
         switch (pilihan) {
             case 1:
-                tampilkanPakaian();
+                tampilkanmaterial();
                 break;
             case 2:
-                tambahPakaian();
+                tambahmaterial();
                 break;
             case 3:
-                ubahPakaian();
+                ubahmaterial();
                 break;
             case 4:
-                hapusPakaian();
+                hapusmaterial();
                 break;
             case 5:
                 simpanKeFile(namaFile);
